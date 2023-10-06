@@ -217,12 +217,24 @@ class CmcScraper:
             # Loop through the days within the month Ex: [5, 12, 19, 26]
             for j in i[1]:
                 snapshot_url = self.build_snapshot_url(year, month, j)
-                snapshot_df = self.scrape_snapshot_data(url=snapshot_url)
                 day = self.add_leading_zeros(j)
                 # Create the csv path. Access the folder associated with the year. 
                 csv_path = csv_root_path + f"{year}\\" + f"{year}_{month_dict[month]}_{day}.csv"
-                self.write_to_csv(csv_path=csv_path, data=snapshot_df)
+
+                try:
+                    # Read the csv into a dataframe to see if it is empty. 
+                    csv_df = pd.read_csv(csv_path)
+                    # If the csv file is empty, get new snapshot data.
+                    if csv_df.empty:
+                        snapshot_df = self.scrape_snapshot_data(url=snapshot_url)
+                        self.write_to_csv(csv_path=csv_path, data=snapshot_df)
+                # If the file does not exist, scrape data. 
+                except FileNotFoundError:
+                    snapshot_df = self.scrape_snapshot_data(url=snapshot_url)
+                    self.write_to_csv(csv_path=csv_path, data=snapshot_df)
                 #print(f"Snapshot: {snapshot_url}")
+            
+        self.browser.quit()
     '''-----------------------------------'''
     def scrape_snapshot_data(self, url: str, recursive: bool = False):
         
@@ -263,7 +275,6 @@ class CmcScraper:
         #self.click_button(xpath=load_more_xpath, wait=True)
         # Get the width & height of the webpage.
         width, height = self.get_webpage_dimensions()
-        print(f"Height: {height}")
         #self.scroll_page(pixel_to_scroll=5000, by_pixel=True)
         #cookies_displayed = cookies_element.is_displayed()
         cur_pixel = height
@@ -313,12 +324,14 @@ class CmcScraper:
                 self.scroll_page(pixel_to_scroll=cur_pixel, by_pixel=True)
 
             if index % 200 == 0:
-                self.click_button(xpath=load_more_xpath, wait=True)
-                time.sleep(5)
+                try:
+                    self.click_button(xpath=load_more_xpath, wait=True)
+                    time.sleep(5)
+                except NoSuchElementException:
+                    scraping = False
 
             index += 1
         df = pd.DataFrame(data_collected)
-        print(f"Data: {data_collected}  Length: {len(data_collected)}")
         return df
 
     '''-----------------------------------'''

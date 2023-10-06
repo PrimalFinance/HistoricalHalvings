@@ -12,7 +12,7 @@ from Scraper.cmc_scraper import CmcScraper
 if __name__ == "__main__":
     cmc = CmcScraper()
 
-    cmc.get_snapshots_by_year(2016)
+    cmc.get_snapshots_by_year(2023)
     #cmc.scrape_snapshot_data(url_2023)
 
 
