@@ -1,5 +1,10 @@
+import sys
+
+
 import csv
 import pandas as pd
+
+
 
 pd.set_option('display.float_format', lambda x: '{:,2f}' % x)
 
@@ -11,15 +16,50 @@ from Scraper.macro_scraper import MacroScraper
 
 
 
-if __name__ == "__main__":
-    cmc = CmcScraper()
-    mac = MacroScraper()
 
-    ca = CoinAnalysis("BTC")
-    #ca.find_file_closest_to_halving(2016)
-    #ca.halving_performance(2016)
-    #cmc.get_snapshots_by_year(2023)
+
+
+
+''' ---------------------- Interest Rates ---------------------- '''
+def interest_rates():
+    mac = MacroScraper()
     mac.update_interest_rates()
-    #cmc.scrape_snapshot_data(url_2023)
+
+
+''' ---------------------- CPI ---------------------- '''
+def cpi():
+    mac = MacroScraper()
+    mac.update_cpi()
+
+''' ---------------------- Historical Snapshots ---------------------- '''
+def historical_snapshots(year: int):
+    cmc = CmcScraper()
+    cmc.get_snapshots_by_year(year)
+
+''' ---------------------- Halving Performance ---------------------- '''
+def halving_performance(ticker: str, year: int):
+    ca = CoinAnalysis(ticker)
+    ca.halving_performance(year, include_BTC=True)
+
+
+
+
+
+
+if __name__ == "__main__":
+
+    if len(sys.argv) > 0:
+        ticker = sys.argv[1]
+        year = int(sys.argv[2])
+        
+    else:
+        ticker = "ETH"
+        year = 2016
+    
+
+    halving_performance(ticker, year)
+    #historical_snapshots(year)
+    #interest_rates()
+    #cpi()
 
 
